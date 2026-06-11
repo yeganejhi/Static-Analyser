@@ -1,6 +1,5 @@
-import ast
 import os
-
+from core import generate_ast,get_ast_dump
 def read_file(file_path):
     if not os.path.exists(file_path):
         print(f"Error: File '{file_path}' not found.")
@@ -13,18 +12,15 @@ def main():
     print("--- Step 1: Reading File Content ---")
 
     source_code = read_file(target_file)
+
+
     if(source_code):
-        print(source_code)
-        print("-" * 36)
+        print("\n--- Generating and Dumping Complete AST ---")
+        
+        tree = generate_ast(source_code)
+        full_ast_text = get_ast_dump(tree)
 
-        print("\n--- Step 2: Testing AST Parsing ---")
-        try:
-            tree = ast.parse(source_code)
-            print("Successfully parsed code into AST!")
-            print("Root node fields:", ast.dump(tree, indent=2)[:300] + "...\n[Truncated]")
-
-        except SyntaxError as e:
-            print(f"Syntax Error in target file: {e}")
+        print(full_ast_text)
 if __name__ == "__main__":
     main()
 
