@@ -23,6 +23,8 @@ def main():
         
         visitor.visit(tree)
         print("------------------------------------------------")
+        visitor.report_unused_variables()
+        print("-------------------------------------")
 
 if __name__ == "__main__":
     main()
