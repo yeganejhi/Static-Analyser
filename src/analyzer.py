@@ -26,5 +26,9 @@ def main():
         visitor.report_unused_variables()
         print("-------------------------------------")
 
+        visitor.report_naming_errors()
+        print("-------------------------------------")
+
+
 if __name__ == "__main__":
     main()

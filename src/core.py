@@ -1,3 +1,4 @@
+import re
 import ast
 
 def generate_ast(source_code):
@@ -20,9 +21,25 @@ class CustomVisitor(ast.NodeVisitor):
         self.defined_vars = set()
         self.used_vars = set()
 
+        self.naming_errors=[]
+        self.snake_case_pattern = r"^[a-z_][a-z0-9_]*$"
+        self.camel_case_pattern = r"^[A-Z][a-zA-Z0-9]*$"
+
     def visit_FunctionDef(self, node):
         print(f"📌 Found function: [ {node.name} ]")
+
+        if not re.match(self.snake_case_pattern,node.name):
+            error_msg = f"Line {node.lineno}: Function name '{node.name}' should be snake_case."
+            self.naming_errors.append(error_msg)
+
         self.generic_visit(node)
+    def visit_ClassDef(self, node):
+        print(f"🏫 Found class: [ {node.name} ]")
+        if not re.match(self.camel_case_pattern,node.name):
+            error_msg=f"Line {node.lineno}:Class name '{node.name}' should be PascalCase (e.g., MyClass)."
+            self.naming_errors.append(error_msg)
+        self.generic_visit(node)
+
 
     def visit_Assign(self, node):
         for target in node.targets:
@@ -46,3 +63,12 @@ class CustomVisitor(ast.NodeVisitor):
                 print(f"  - Variable '{var}' is defined but never used.")
         else:
             print("\n✅ No unused variables detected. Code is clean!")
+
+    def report_naming_errors(self):
+        if self.naming_errors:
+            print("\n❌ [Static Analysis Error] Naming Convention Violations Found:")
+            for err in self.naming_errors:
+                print(f"  - {err}")
+        
+        else:
+            print("\n✅ All functions and classes follow the PEP 8 naming style!")
