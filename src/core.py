@@ -25,6 +25,8 @@ class CustomVisitor(ast.NodeVisitor):
         self.snake_case_pattern = r"^[a-z_][a-z0-9_]*$"
         self.camel_case_pattern = r"^[A-Z][a-zA-Z0-9]*$"
 
+        self.dead_code=[]
+
     def visit_FunctionDef(self, node):
         print(f"📌 Found function: [ {node.name} ]")
 
@@ -32,7 +34,23 @@ class CustomVisitor(ast.NodeVisitor):
             error_msg = f"Line {node.lineno}: Function name '{node.name}' should be snake_case."
             self.naming_errors.append(error_msg)
 
+        has_returned = False
+        for child_node in node.body:
+            if(has_returned):
+                msg = f"Line {child_node.lineno}: Unreachable code detected after return/raise statement."
+                self.dead_code.append(msg)
+
+            if isinstance(child_node,(ast.Return,ast.Raise)):
+                has_returned =True
+            elif isinstance(child_node, ast.If):
+                if_has_return = any(isinstance(n, (ast.Return, ast.Raise)) for n in child_node.body)
+                else_has_return = any(isinstance(n, (ast.Return, ast.Raise)) for n in child_node.orelse)
+                
+                if if_has_return and else_has_return:
+                    has_returned = True
+
         self.generic_visit(node)
+
     def visit_ClassDef(self, node):
         print(f"🏫 Found class: [ {node.name} ]")
         if not re.match(self.camel_case_pattern,node.name):
@@ -72,3 +90,11 @@ class CustomVisitor(ast.NodeVisitor):
         
         else:
             print("\n✅ All functions and classes follow the PEP 8 naming style!")
+
+    def report_dead_code(self):
+        if self.dead_code:
+            print("\n👻 [Static Analysis Warning] Unreachable/Dead Code Detected:")
+            for err in self.dead_code:
+                print(f"  - {err}")
+        else:
+            print("\n✅ No unreachable code detected. Control flow looks healthy!")

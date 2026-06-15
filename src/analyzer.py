@@ -28,7 +28,8 @@ def main():
 
         visitor.report_naming_errors()
         print("-------------------------------------")
-
+        visitor.report_dead_code()
+        print("-------------------------------------")
 
 if __name__ == "__main__":
     main()

@@ -18,3 +18,12 @@ class student_info:
 class ValidClass:
     def correct_function(self):
         pass
+
+def check_status(score):
+    if score > 50:
+        return "Pass"
+    else:
+        raise ValueError("Failed")
+    
+    print("This will never print!") 
+    x = 10
