@@ -1,6 +1,8 @@
 import re
 import ast
 
+COMPLEXITY_THRESHOLD = 10
+
 def generate_ast(source_code):
     try:
         tree = ast.parse(source_code)
@@ -52,16 +54,23 @@ class CustomVisitor(ast.NodeVisitor):
         self.dead_code=[]
         self.function_complexities={}
 
+        self.complextiy_warning = []
+
     def visit_FunctionDef(self, node):
         print(f"📌 Found function: [ {node.name} ]")
         self.current_function = node.name
 
         sub_visitor = ComplexityVisitor()
         sub_visitor.visit(node)
+        complexity_score = sub_visitor.complexity
 
         self.function_complexities[node.name] = sub_visitor.complexity
         print(f"📊 Cyclomatic Complexity of '{node.name}': {sub_visitor.complexity}")
 
+        if complexity_score> COMPLEXITY_THRESHOLD:
+            warning_msg = f"⚠️ Warning: Function '{node.name}' is too complex (Complexity: {complexity_score}). Consider refactoring."
+            self.complextiy_warning.append(warning_msg)
+            print(warning_msg)
         if not re.match(self.snake_case_pattern,node.name):
             error_msg = f"Line {node.lineno}: Function name '{node.name}' should be snake_case."
             self.naming_errors.append(error_msg)

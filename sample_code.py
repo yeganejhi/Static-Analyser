@@ -32,3 +32,20 @@ def check_logic(x, y):
         for i in range(5):
             print(i)
     return x
+
+def super_complex_function(a, b, c):
+    if a > 10 and b < 5:
+        if c == 0:
+            for i in range(10):
+                if i % 2 == 0:
+                    print("Even")
+        else:
+            while b < 10:
+                b += 1
+    elif a == 5 or b == 5:
+        if c > 10:
+            return True
+    else:
+        for j in range(5):
+            print(j)
+    return False
