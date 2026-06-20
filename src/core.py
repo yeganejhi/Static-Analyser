@@ -13,7 +13,31 @@ def get_ast_dump(tree):
     if tree is None:
         return "No tree to dump."
     return ast.dump(tree, indent=4)
+class ComplexityVisitor(ast.NodeVisitor):
+    def __init__(self):
+        self.complexity=1
 
+    def visit_If(self, node):
+        self.complexity+=1
+        self.generic_visit(node)
+
+    def visit_For(self, node):
+        self.complexity+=1
+        self.generic_visit(node)
+
+    def visit_While(self, node):
+        self.complexity+=1
+        self.generic_visit(node)
+
+    def visit_AsyncFor(self, node):
+        self.complexity+=1
+        self.generic_visit(node)
+
+    def visit_BoolOp(self, node):
+        if isinstance(node.op,(ast.And,ast.Or)):
+            self.complexity+= len(node.values)-1
+        self.generic_visit(node)
+        
 class CustomVisitor(ast.NodeVisitor):
 
     def __init__(self):
@@ -26,9 +50,17 @@ class CustomVisitor(ast.NodeVisitor):
         self.camel_case_pattern = r"^[A-Z][a-zA-Z0-9]*$"
 
         self.dead_code=[]
+        self.function_complexities={}
 
     def visit_FunctionDef(self, node):
         print(f"📌 Found function: [ {node.name} ]")
+        self.current_function = node.name
+
+        sub_visitor = ComplexityVisitor()
+        sub_visitor.visit(node)
+
+        self.function_complexities[node.name] = sub_visitor.complexity
+        print(f"📊 Cyclomatic Complexity of '{node.name}': {sub_visitor.complexity}")
 
         if not re.match(self.snake_case_pattern,node.name):
             error_msg = f"Line {node.lineno}: Function name '{node.name}' should be snake_case."
@@ -50,6 +82,7 @@ class CustomVisitor(ast.NodeVisitor):
                     has_returned = True
 
         self.generic_visit(node)
+        self.current_function = None
 
     def visit_ClassDef(self, node):
         print(f"🏫 Found class: [ {node.name} ]")

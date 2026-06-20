@@ -27,3 +27,8 @@ def check_status(score):
     
     print("This will never print!") 
     x = 10
+def check_logic(x, y):
+    if x > 10 and y < 5: 
+        for i in range(5):
+            print(i)
+    return x
