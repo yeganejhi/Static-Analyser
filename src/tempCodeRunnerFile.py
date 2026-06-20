@@ -20,21 +20,16 @@ def main():
         
         print("\n--- Starting AST Traversal (Visitor Pattern) ---")
         visitor = CustomVisitor()
+        
         visitor.visit(tree)
-        print("--- Traversal Completed ---")
-        
-        print("=====================================================")
-        print("                FINAL ANALYSIS REPORT                ")
-        print("=====================================================")
-        
+        print("------------------------------------------------")
         visitor.report_unused_variables()
-        print("-----------------------------------------------------")
+        print("-------------------------------------")
+
         visitor.report_naming_errors()
-        print("-----------------------------------------------------")
+        print("-------------------------------------")
         visitor.report_dead_code()
-        print("-----------------------------------------------------")
-        visitor.report_complexity_warnings()
-        print("=====================================================")
+        print("-------------------------------------")
 
 if __name__ == "__main__":
     main()
