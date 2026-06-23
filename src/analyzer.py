@@ -1,6 +1,7 @@
 # src/analyzer.py
 import os
 from core import generate_ast, CustomVisitor
+from reporter import ConsoleReporter
 
 def read_file(file_path):
     if not os.path.exists(file_path):
@@ -19,22 +20,11 @@ def main():
         tree = generate_ast(source_code)
         
         print("\n--- Starting AST Traversal (Visitor Pattern) ---")
-        visitor = CustomVisitor()
+        visitor = CustomVisitor(file_path=target_file)
         visitor.visit(tree)
+        
+        issues = visitor.filalize_analysis()
         print("--- Traversal Completed ---")
-        
-        print("=====================================================")
-        print("                FINAL ANALYSIS REPORT                ")
-        print("=====================================================")
-        
-        visitor.report_unused_variables()
-        print("-----------------------------------------------------")
-        visitor.report_naming_errors()
-        print("-----------------------------------------------------")
-        visitor.report_dead_code()
-        print("-----------------------------------------------------")
-        visitor.report_complexity_warnings()
-        print("=====================================================")
-
+        ConsoleReporter.report(issues)
 if __name__ == "__main__":
     main()
