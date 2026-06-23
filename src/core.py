@@ -43,9 +43,10 @@ class ComplexityVisitor(ast.NodeVisitor):
         self.generic_visit(node)
         
 class CustomVisitor(ast.NodeVisitor):
-    def __init__(self,file_path="sample_code"):
+    def __init__(self, file_path="sample_code", config=None):
         super().__init__()
         self.file_path = file_path
+        self.config = config if config else {"max_complexity": 10, "disable_rules": []}
         self.issues = []
 
         self.defined_vars = set()
@@ -56,7 +57,6 @@ class CustomVisitor(ast.NodeVisitor):
 
         self.current_function = None
 
-
     def visit_FunctionDef(self, node):
         self.current_function = node.name
 
@@ -64,26 +64,26 @@ class CustomVisitor(ast.NodeVisitor):
         sub_visitor.visit(node)
         complexity_score = sub_visitor.complexity
 
-
-        if complexity_score > COMPLEXITY_THRESHOLD:
+        max_allowed_complexity = self.config.get("max_complexity", 10)
+        if complexity_score > max_allowed_complexity:
             self.issues.append({
                 'file_path': self.file_path,
                 'line': node.lineno,
                 'column': node.col_offset,
-                'message': f"Function '{node.name}' is too complex (Cyclomatic Complexity: {complexity_score}). Consider refactoring.",
+                'message': f"Function '{node.name}' is too complex (Cyclomatic Complexity: {complexity_score}). Max allowed is {max_allowed_complexity}.",
                 'severity': 'WARNING' 
             })
             
-        if not re.match(self.snake_case_pattern, node.name):
-            self.issues.append({
-                'file_path':self.file_path,
-                'line':node.lineno,
-                'column':node.col_offset,
-                'message':f"Function name '{node.name}'should be snake_case (e.g., my_function).",
-                'severity': 'ERROR'
+        if "naming-convention" not in self.config.get("disable_rules", []):
+            if not re.match(self.snake_case_pattern, node.name):
+                self.issues.append({
+                    'file_path': self.file_path,
+                    'line': node.lineno,
+                    'column': node.col_offset,
+                    'message': f"Function name '{node.name}' should be snake_case (e.g., my_function).",
+                    'severity': 'ERROR'
+                })
 
-
-            })
         has_returned = False
         for child_node in node.body:
             if has_returned:
@@ -108,14 +108,15 @@ class CustomVisitor(ast.NodeVisitor):
         self.current_function = None
 
     def visit_ClassDef(self, node):
-        if not re.match(self.camel_case_pattern, node.name):
-            self.issues.append({
-                'file_path':self.file_path,
-                'line':node.lineno,
-                'column':node.col_offset,
-                'message': f"Class name '{node.name}' should be PascalCase (e.g., MyClass).",
-                'severity':'ERROR'
-            })
+        if "naming-convention" not in self.config.get("disable_rules", []):
+            if not re.match(self.camel_case_pattern, node.name):
+                self.issues.append({
+                    'file_path': self.file_path,
+                    'line': node.lineno,
+                    'column': node.col_offset,
+                    'message': f"Class name '{node.name}' should be PascalCase (e.g., MyClass).",
+                    'severity': 'ERROR'
+                })
         self.generic_visit(node)
 
     def visit_Assign(self, node):
@@ -129,7 +130,7 @@ class CustomVisitor(ast.NodeVisitor):
             self.used_vars.add(node.id)
         self.generic_visit(node)
     
-    def filalize_analysis(self):
+    def finalize_analysis(self):
         unsed_vars = self.defined_vars - self.used_vars
 
         for var in unsed_vars:
