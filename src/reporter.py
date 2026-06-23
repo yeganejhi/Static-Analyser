@@ -1,6 +1,7 @@
 # src/reporter
 from colorama import init, Fore, Style
 import os
+import json
 
 init(autoreset=True)
 
@@ -32,4 +33,19 @@ class ConsoleReporter:
 
         print("-" * 50)
         print(f"{Fore.CYAN}Total issues found: {len(issues)}")
+
+    def report_as_json(issues:list):
+        json_output_list = []
+        for issue in issues:
+            clean_issue ={
+                'file_path': issue.get('file_path', 'unknown'),
+                'line': issue.get('line', '?'),
+                'column': issue.get('column', '?'),
+                'message': issue.get('message', ''),
+                'type': issue.get('severity', 'WARNING')  # کلید severity را به type نگاشت می‌کنیم
+            
+            }
+            json_output_list.append(clean_issue)
+        json_string = json.dumps(json_output_list,indent=2)
+        print(json_string)
         

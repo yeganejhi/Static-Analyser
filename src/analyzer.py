@@ -14,6 +14,7 @@ def main():
     target_file = "sample_code.py"
     
     print("--- Reading Target File ---")
+    EXPORT_AS_JSON = False
     source_code = read_file(target_file)
     
     if source_code:
@@ -24,7 +25,12 @@ def main():
         visitor.visit(tree)
         
         issues = visitor.filalize_analysis()
-        print("--- Traversal Completed ---")
-        ConsoleReporter.report(issues)
+        if EXPORT_AS_JSON:
+            ConsoleReporter.report_as_json(issues)
+        else:
+            print(f"--- Reading Target File: {target_file} ---")
+            print("\n--- Starting AST Traversal (Visitor Pattern) ---")
+            print("--- Traversal Completed ---")        
+            ConsoleReporter.report(issues)
 if __name__ == "__main__":
     main()
