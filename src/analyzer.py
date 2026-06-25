@@ -3,6 +3,7 @@ import os
 import json
 from core import generate_ast, CustomVisitor
 from reporter import ConsoleReporter
+from cli import parse_arguments
 
 def read_file(file_path):
     if not os.path.exists(file_path):
@@ -30,26 +31,49 @@ def load_config():
         print("No analyzer.json found. Using default internal configs.")
 
     return default_config
-
-def main():
-    target_file = "sample_code.py"
-    EXPORT_AS_JSON = False
-    
-    config = load_config()
-    source_code = read_file(target_file)
-    
+def analyze_single_file(file_path,config):
+    source_code = read_file(file_path)
     if source_code:
         tree = generate_ast(source_code)
-        
-        visitor = CustomVisitor(file_path=target_file, config=config)
-        visitor.visit(tree)
-        
-        issues = visitor.finalize_analysis()
-        
-        if EXPORT_AS_JSON:
-            ConsoleReporter.report_as_json(issues)
-        else:      
-            ConsoleReporter.report(issues)
+        if tree :
+            visitor = CustomVisitor(file_path=file_path,config=config)
+            visitor.visit(tree)
+            return visitor.finalize_analysis()
+    return []
+def main():
+    arg = parse_arguments()
+    target_path = arg.path
+    export_format = arg.format
 
+    
+    config = load_config()
+
+    all_issues = []
+    if os.path.isdir(target_path):
+        print(f"-> Analyzing directory: {target_path}")
+
+        for root,dirs,files in os.walk(target_path):
+            if ".venv" in root:
+                continue
+            for file in files :
+                if file.endswith(".py"):
+                    full_path = os.path.join(root,file)
+                    file_issues = analyze_single_file(full_path,config)
+                    all_issues.extend(file_issues)
+
+    elif os.path.isfile(target_path):
+        print(f"-> Recognizing a SINGLE FILE: {target_path}")
+        all_issues = analyze_single_file(target_path,config)
+    else:
+        print(f"Error: Path '{target_path}' does not exist.")
+        return
+    
+        
+    if export_format == "json":
+        ConsoleReporter.report_as_json(all_issues)
+    else:
+        print("-" * 50)       
+        ConsoleReporter.report(all_issues)
+        
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
 {
-  "max_complexity": 15,
-  "disable_rules": ["naming-convention"]
+  "max_complexity": 8,
+  "disable_rules": []
 }
