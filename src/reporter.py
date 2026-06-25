@@ -42,8 +42,7 @@ class ConsoleReporter:
                 'line': issue.get('line', '?'),
                 'column': issue.get('column', '?'),
                 'message': issue.get('message', ''),
-                'type': issue.get('severity', 'WARNING')  # کلید severity را به type نگاشت می‌کنیم
-            
+                'severity' : issue.get('type', issue.get('severity', 'WARNING')).upper()            
             }
             json_output_list.append(clean_issue)
         json_string = json.dumps(json_output_list,indent=2)

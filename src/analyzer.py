@@ -33,13 +33,21 @@ def load_config():
     return default_config
 def analyze_single_file(file_path,config):
     source_code = read_file(file_path)
-    if source_code:
-        tree = generate_ast(source_code)
-        if tree :
-            visitor = CustomVisitor(file_path=file_path,config=config)
-            visitor.visit(tree)
-            return visitor.finalize_analysis()
-    return []
+    if source_code is None:
+        return []
+    tree = generate_ast(source_code)
+    if tree is None:
+        return [{
+            "file_path": file_path,
+            "line": "?",
+            "column": "?", 
+            "message": "Critical: File contains syntax errors and cannot be analyzed.",
+            "severity": "ERROR"
+        }]
+
+    visitor = CustomVisitor(file_path=file_path,config=config)
+    visitor.visit(tree)
+    return visitor.finalize_analysis()
 def main():
     arg = parse_arguments()
     target_path = arg.path

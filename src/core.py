@@ -9,7 +9,7 @@ def generate_ast(source_code):
         tree = ast.parse(source_code)
         return tree
     except SyntaxError as e:
-        print(f"Syntax Error detected while parsing: {e}")
+        print(f"[SYNTAX ERROR] Invalid Python syntax: {e.msg} (Line {e.lineno})")        
         return None
     
 def get_ast_dump(tree):
