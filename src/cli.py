@@ -19,6 +19,7 @@ def parse_arguments():
         default="text",
         help="Output format for the analysis report (default: text)"
     )
+    parser.add_argument("--ai", action="store_true", help="Enable AI-powered code review and optimization suggestions")
 
     return parser.parse_args()
 

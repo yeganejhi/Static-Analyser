@@ -4,6 +4,7 @@ import json
 from core import generate_ast, CustomVisitor
 from reporter import ConsoleReporter
 from cli import parse_arguments
+from ai_handler import AIReviewer  
 
 def read_file(file_path):
     if not os.path.exists(file_path):
@@ -82,6 +83,13 @@ def main():
     else:
         print("-" * 50)       
         ConsoleReporter.report(all_issues)
+
+        if arg.ai:
+            print(f"\n🤖 Calling Gemini AI Code Reviewer...")
+            ai_suggestions = AIReviewer.get_suggestions(all_issues)
+            print("\n=== AI OPTIMIZATION SUGGESTIONS ===")
+            print(ai_suggestions)
+            print("=" * 50)
         
 if __name__ == "__main__":
     main()
