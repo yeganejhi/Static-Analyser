@@ -1,119 +1,169 @@
-# Custom Python Static Analysis and AST Metrics Engine
+Custom Python Static Analysis & AST Metrics Engine
+https://github.com/yeganejhi/Static-Analyser/actions/workflows/ci.yml/badge.svg
+https://img.shields.io/badge/Python-3.13-blue.svg
+https://img.shields.io/badge/Field-Software_Engineering_%7C_Compilers-orange.svg
 
-[![Build Status](https://github.com/yeganejhi/Static-Analyser/actions/workflows/ci.yml/badge.svg)](https://github.com/yeganejhi/Static-Analyser/actions)
+A modular static analyzer that looks at Python code structure, finds potential issues, and helps enforce good coding practices. Built on Python's ast module, it parses source code into abstract syntax trees to analyze control flow and variable usage without actually running the code.
 
-![Python Version](https://img.shields.io/badge/Python-3.13-blue.svg)
+🚀 What It Does
+AST-Level Analysis: Instead of using regex or string matching (which can be brittle), this tool works directly with Python's syntax tree to understand code structure at a deeper level.
 
-This tool is an lightweight static program analyzer. It is designed to evaluate software metrics and enforce syntactic and architectural guidelines. The Custom Python Static Analysis and AST Metrics Engine is built directly on top of Pythons native ast compiler modules. This tool parses source code into a tree representation to inspect control flow and lexical state without runtime execution.
+Metrics Computation: Calculates things like cyclomatic complexity to give you a sense of how complex your functions are.
 
----
+AI Integration Ready: There's a hook for connecting to LLMs (like OpenAI or Anthropic) if you want automated refactoring suggestions.
 
-## Technical Deep Dive and Implementation Details
+Clear Reporting: Outputs both color-coded terminal messages and structured JSON reports.
 
-The Custom Python Static Analysis and AST Metrics Engine does not rely on naive string pattern matching. Instead it operates at the syntax level. This engine resolves code structures into tree nodes.
+CI/CD Friendly: Comes with a GitHub Actions pipeline and pytest tests out of the box.
 
-### 1. Cyclomatic. Ast Traversal
+🔍 How It Works Under the Hood
+1. Cyclomatic Complexity
+This is basically a measure of how many independent paths exist through your code. The more decision points (if statements, loops, etc.), the higher the complexity.
 
-The complexity calculation is isolated inside a ComplexityVisitor. The ComplexityVisitor tracks decision points within function scopes to map branching overhead:
+The engine walks through the AST and counts:
 
-* Node Coverage: The Custom Python Static Analysis and AST Metrics Engine intercepts ast.If, ast.For, ast.. Ast.AsyncFor. It increments the base complexity score for each branching event.
+if, for, while, and async for statements (each adds 1 to the score)
 
-* Boolean Short-Circuit Analysis: The Custom Python Static Analysis and AST Metrics Engine explicitly intercepts ast.BoolOp nodes. When evaluating And or Or operators it calculates the length of the values chain to accurately register the compound complexity of conditions.
+Boolean expressions with and/or (each condition adds to the complexity)
 
-### 2. Control Flow Interruption and Unreachable Code
+For example, if a and b or c: adds 2 to the complexity score because there are two decision points.
 
-The Custom Python Static Analysis and AST Metrics Engine detects code after early exits inside ast.FunctionDef scopes. It tracks control-flow termination:
+2. Finding Unreachable Code
+Ever written code that can never run? This catches that.
 
-* Sequential Verification: The Custom Python Static Analysis and AST Metrics Engine iterates through the functions node.body statements. A boolean state flag is flipped to True immediately upon encountering an instance of ast.. Ast.Raise. Any subsequent sibling nodes processed within that scope are automatically flagged as code.
+If a function hits a return or raise, any code after that in the same block gets flagged.
 
-* Bidirectional Conditional Splitting: The Custom Python Static Analysis and AST Metrics Engine handles block terminations inside ast.If nodes. It evaluates if both branches independently return or raise. If both the body and orelse sub-trees terminate the control flow, any code following the if-else block in the parent scope is flagged as unreachable.
+For if/else blocks: if both branches end with return or raise, anything after the if/else is unreachable.
 
-### 3. Lexical State Analysis and Variable Lifecycles
+3. Tracking Variable Usage
+The tool keeps track of which variables are defined and which ones are actually used. After scanning the whole file, it does a simple set difference:
 
-The Custom Python Static Analysis and AST Metrics Engine tracks usage trends across local and global scopes. It maps mutations during the single-pass traversal:
+text
+Unused Variables = Defined Variables - Used Variables
+This helps catch dead code and potential mistakes.
 
-* Target Mapping: The Custom Python Static Analysis and AST Metrics Engine unrolls node.targets. If a target is bound as an ast.Name its identifier is injected into the defined_vars set.
+4. Naming Convention Checks
+Functions should follow snake_case (e.g., my_function)
 
-* Reference Resolving: The Custom Python Static Analysis and AST Metrics Engine checks the nodes context. If the variable identifier is added to the used_vars set it is used.
+Classes should follow PascalCase (e.g., MyClass)
 
-* Set-Difference Finalization: Because usage maps cannot be evaluated safely until the entire tree has been fully traversed the finalize_analysis method must be invoked explicitly. It performs a set-difference operation to find variables.
+These rules can be turned off via configuration if needed.
 
-### 4. Regular Expression Constraints
+🤖 AI Refactoring Integration (src/ai_handler.py)
+This is an experimental feature that can send problematic code to an LLM and ask for refactoring suggestions. When the analyzer finds something like a function with complexity > 10, it packages up the code and sends it to an API (OpenAI, Anthropic, etc.) with a prompt like:
 
-* Functions: The Custom Python Static Analysis and AST Metrics Engine validates functions against style guides.
+text
+[SYSTEM]: You are an automated refactoring agent.
+[CONTEXT]: Cyclomatic Complexity is 14 (max allowed is 10).
+[INPUT CODE]: def process_data(data): ...
+[TASK]: Refactor to reduce complexity. Return ONLY valid Python code.
+The response is then parsed and validated to make sure it's syntactically correct before being shown to the developer.
 
-* Classes: The Custom Python Static Analysis and AST Metrics Engine validates classes against PascalCase style guides.
-
-Rules can be dynamically disabled at instantiation by passing a rule-bypassing dictionary into the config payload.
-
----
-
-## Architecture and Component Layout
-
-The repository enforces a separation of concerns by isolating parsing, state visitation and reporting layers:
-
-```text
-
-Static Analyser/
-
-├──.github/workflows/
-
-│   └── ci.yml            # GitHub Actions CI pipeline configuration
-
-├── src/
-
-│   ├── core.py           # AST Visitors, complexity mapping and analytics core
-
-│   ├── analyzer.py       # Main analyzer orchestration layer
-
-│   └── reporter.py       # Console formatters and JSON encoders
-
-└── tests/
-
-└── test_analyzer.py  # Automated regression test suite
-
-```
-
-Testing and Automated SQA Pipeline
-
-The Custom Python Static Analysis and AST Metrics Engine uses unit testing via pytest. The systems compiler visitors are protected against regression using a test suite.
-
-Continuous Integration
-
-A continuous integration pipeline is fully configured via GitHub Actions. Upon every push or pull_request targeting the branch an ephemeral Linux container runs the following steps to block defective code from hitting production:
-
-```bash
-
-# Executed automatically in GitHub Actions virtual environment:
-
-python -m pip install --upgrade pip
-
-pip install pytest
-
-pytest
-
-```
-
-Local Usage
-
-To execute the Custom Python Static Analysis and AST Metrics Engine locally and run evaluations against your files:
-
-```bash
-
+📊 Usage Examples
+Running the Analyzer
+bash
+# Default run (analyzes sample files)
 python src/analyzer.py
 
-```
+# Analyze a specific directory or file
+python src/analyzer.py --path ./my_project --verbose
 
-To run the automated validation suite locally:
+# Save output as JSON
+python src/analyzer.py --path ./src/core.py --output report.json
+Sample Input
+python
+def badFunction(x):
+    used_var = 10
+    unused_var = 50
+    if x > used_var:
+        return True
+    else:
+        return False
+    print("This line is completely dead!")  # Unreachable
+Output Examples
+Console Output (colored):
 
-```bash
+text
+[ERROR] sample_dirty_code.py:1:0 — Function name 'badFunction' should be snake_case.
+[WARNING] sample_dirty_code.py:8:4 — Unreachable code after return/raise.
+[WARNING] sample_dirty_code.py:?:? — Variable 'unused_var' defined but never used.
+JSON Output:
 
-pip install pytest
+json
+[
+  {
+    "file_path": "sample_dirty_code.py",
+    "line": 1,
+    "column": 0,
+    "message": "Function name 'badFunction' should be snake_case.",
+    "severity": "ERROR"
+  },
+  {
+    "file_path": "sample_dirty_code.py",
+    "line": 8,
+    "column": 4,
+    "message": "Unreachable code detected after return/raise.",
+    "severity": "WARNING"
+  }
+]
+Custom Configuration
+You can adjust settings programmatically:
 
+python
+from core import CustomVisitor
+
+config = {
+    "max_complexity": 12,
+    "disable_rules": ["naming-convention"]  # turn off naming checks
+}
+
+visitor = CustomVisitor(config=config)
+🏗️ Project Structure
+text
+Static Analyser/
+├── .github/workflows/
+│   └── ci.yml              # GitHub Actions CI config
+├── src/
+│   ├── core.py             # AST visitors & metrics
+│   ├── analyzer.py         # CLI orchestrator
+│   ├── ai_handler.py       # LLM integration
+│   └── reporter.py         # Output formatting
+├── tests/
+│   └── test_analyzer.py    # Unit tests
+└── requirements.txt        # Dependencies
+⚠️ Known Limitations
+Cross-module analysis: The variable tracker only looks at single files. It doesn't analyze imports or global dependencies across modules.
+
+Nested functions: Variables defined inside closures might show up as "unused" incorrectly in some edge cases.
+
+Python version: Optimized for Python 3.10+. Older syntax (Python 2) won't parse.
+
+🧪 Testing & CI
+The project uses pytest for regression testing. The test suite isolates specific code snippets and checks that the analyzer catches the right issues.
+
+GitHub Actions runs the full test suite on every push to main:
+
+bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 pytest -v
+📦 Installation
+Requirements:
 
-```
+Python 3.10 or higher
 
-Research and Academic Relevance
+Dependencies listed in requirements.txt
 
-The Custom Python Static Analysis and AST Metrics Engine addresses real-world challenges in Static Program Analysis, SQA Automation and Compiler Intermediates. It showcases an understanding of building custom linting utilities manipulating tree structures parsing algorithmic complexities and designing deterministic testing suites suitable for software architecture research. The Custom Python Static Analysis and AST Metrics Engine is a tool, for researchers and developers.
+Setup:
+
+bash
+git clone https://github.com/yeganejhi/Static-Analyser.git
+cd Static-Analyser
+pip install -r requirements.txt
+pytest -v  # verify everything works
+📚 References
+This work draws on foundational concepts from program analysis and software metrics:
+
+McCabe, T. J. (1976). A Complexity Measure. IEEE Transactions on Software Engineering. (The classic paper on cyclomatic complexity.)
+
+Nielson, F., Nielson, H. R., & Hankin, C. (2015). Principles of Program Analysis. Springer. (A comprehensive reference on static analysis and data-flow.)
