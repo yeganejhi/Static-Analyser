@@ -15,11 +15,22 @@ def parse_arguments():
     parser.add_argument(
         "--format",
         type=str,
-        choices=["text", "json"],
+        choices=["text", "json", "sarif"],
         default="text",
         help="Output format for the analysis report (default: text)"
     )
-    parser.add_argument("--ai", action="store_true", help="Enable AI-powered code review and optimization suggestions")
+
+    parser.add_argument(
+        "--output",
+        type=str,
+        help="Output file path for SARIF or JSON reports"
+    )
+
+    parser.add_argument(
+        "--config",
+        type=str,
+        help="Path to custom configuration file"
+    )
 
     return parser.parse_args()
 
