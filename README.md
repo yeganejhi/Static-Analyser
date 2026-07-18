@@ -129,6 +129,4 @@ Open Source software grows through community!
 *   If you want to contribute code, feel free to fork the repository and submit a **Pull Request**. 
 *   Check our tests in the `tests/` directory to see how we maintain quality.
 
-
-
 ```
