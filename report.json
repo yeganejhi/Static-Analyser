@@ -1,0 +1,98 @@
+[
+  {
+    "file_path": "sample_code.py",
+    "line": 4,
+    "column": 4,
+    "message": "Variable 'temp_data' is defined but never used.",
+    "severity": "WARNING",
+    "category": "code_quality"
+  },
+  {
+    "file_path": "sample_code.py",
+    "line": 10,
+    "column": 0,
+    "message": "Function name 'calculateScore' should be snake_case (e.g., my_function).",
+    "severity": "ERROR",
+    "category": "code_quality"
+  },
+  {
+    "file_path": "sample_code.py",
+    "line": 14,
+    "column": 0,
+    "message": "Class name 'student_info' should be PascalCase (e.g., MyClass).",
+    "severity": "ERROR",
+    "category": "code_quality"
+  },
+  {
+    "file_path": "sample_code.py",
+    "line": 28,
+    "column": 4,
+    "message": "Unreachable code detected after return/raise statement.",
+    "severity": "WARNING",
+    "category": "code_quality"
+  },
+  {
+    "file_path": "sample_code.py",
+    "line": 29,
+    "column": 4,
+    "message": "Unreachable code detected after return/raise statement.",
+    "severity": "WARNING",
+    "category": "code_quality"
+  },
+  {
+    "file_path": "sample_code.py",
+    "line": 29,
+    "column": 4,
+    "message": "Variable 'x' is defined but never used.",
+    "severity": "WARNING",
+    "category": "code_quality"
+  },
+  {
+    "file_path": "sample_code.py",
+    "line": 37,
+    "column": 0,
+    "message": "Function 'super_complex_function' is too complex (Cyclomatic Complexity: 11). Max allowed is 8.",
+    "severity": "WARNING",
+    "category": "code_quality"
+  },
+  {
+    "file_path": "sample_code.py",
+    "line": 59,
+    "column": 4,
+    "message": "Unreachable code detected after return/raise statement.",
+    "severity": "WARNING",
+    "category": "code_quality"
+  },
+  {
+    "file_path": "sample_code.py",
+    "line": 64,
+    "column": 4,
+    "message": "Security Issue: Use of eval() is dangerous and can lead to code injection",
+    "severity": "ERROR",
+    "category": "security"
+  },
+  {
+    "file_path": "sample_code.py",
+    "line": 65,
+    "column": 4,
+    "message": "Security Issue: Use of exec() is dangerous and can lead to code injection",
+    "severity": "ERROR",
+    "category": "security"
+  },
+  {
+    "file_path": "sample_code.py",
+    "line": 67,
+    "column": 4,
+    "message": "Variable 'query' is defined but never used.",
+    "severity": "WARNING",
+    "category": "code_quality"
+  },
+  {
+    "file_path": "sample_code.py",
+    "line": 76,
+    "column": 4,
+    "message": "Potential infinite loop detected: 'while True' without break or return",
+    "severity": "WARNING",
+    "category": "performance"
+  }
+]

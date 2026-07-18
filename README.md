@@ -1,159 +1,134 @@
-# Custom Python Static Analysis & AST Metrics Engine
+```markdown
+# 🔍 Python Static Analyser
 
-![Build Status](https://github.com/yeganejhi/Static-Analyser/actions/workflows/ci.yml/badge.svg)
-![Python Version](https://img.shields.io/badge/Python-3.13-blue.svg)
-![Field](https://img.shields.io/badge/Field-Software_Engineering_%7C_Compilers-orange.svg)
+[![CI Status](https://github.com/yeganejhi/Static-Analyser/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY/actions)
 
-A modular static analyzer that looks at Python code structure, finds potential issues, and helps enforce good coding practices. Built on Python's `ast` module, it parses source code into abstract syntax trees to analyze control flow and variable usage without actually running the code.
+##  Highlights
 
----
+*   **Improve Code Quality:** Automatically find unused variables, dead code, and naming convention mistakes.
+*   **Enhance Security:** Detect dangerous functions like `eval()` and potential SQL injections before they cause harm.
+*   **Boost Performance:** Identify infinite loops and inefficient string concatenations.
+*   **Flexible Reporting:** Export your results in plain text, JSON, or SARIF formats.
+*   **Fully Customizable:** Easily adjust rules and complexity limits using a simple JSON file.
 
-## 🚀 What It Does
-* **AST-Level Analysis:** Instead of using regex or string matching (which can be brittle), this tool works directly with Python's syntax tree to understand code structure at a deeper level.
-* **Metrics Computation:** Calculates things like cyclomatic complexity to give you a sense of how complex your functions are.
-* **AI Integration Ready:** There's a hook for connecting to LLMs (like OpenAI or Anthropic) if you want automated refactoring suggestions.
-* **Clear Reporting:** Outputs both color-coded terminal messages and structured JSON reports.
-* **CI/CD Friendly:** Comes with a GitHub Actions pipeline and pytest tests out of the box.
+## ℹ Overview
 
----
+**Python Static Analyser** is a professional and lightweight code quality tool designed for Python developers. Writing clean, secure, and fast code can be challenging, especially in large projects. This tool helps you automatically scan your Python codebase to find hidden bugs, bad practices, and security risks.
 
-## 🔍 How It Works Under the Hood
+Whether you are a solo developer trying to learn better coding habits, or a team looking to maintain high standards, this tool provides clear and helpful feedback directly in your terminal. It acts like an automated code reviewer that never gets tired!
 
-### 1. Cyclomatic Complexity
-This is basically a measure of how many independent paths exist through your code. The more decision points (if statements, loops, etc.), the higher the complexity. The engine walks through the AST and counts:
-* `if`, `for`, `while`, and `async for` statements (each adds 1 to the score)
-* Boolean expressions with `and`/`or` (each condition adds to the complexity)
+##  Architecture
 
-*For example:* `if a and b or c:` adds 2 to the complexity score because there are two decision points.
-
-### 2. Finding Unreachable Code (Dead Code)
-Ever written code that can never run? This catches that:
-* If a function hits a `return` or `raise`, any code after that in the same block gets flagged.
-* **For if/else blocks:** If both branches end with `return` or `raise`, anything trailing after the whole if/else block is unreachable.
-
-### 3. Tracking Variable Usage
-The tool keeps track of which variables are defined and which ones are actually used. After scanning the whole file, it does a simple set difference:
-$$\text{Unused Variables} = \text{Defined Variables} \setminus \text{Used Variables}$$
-This helps catch dead code and potential mistakes.
-
-### 4. Naming Convention Checks
-* **Functions:** Should follow `snake_case` (e.g., `my_function`)
-* **Classes:** Should follow `PascalCase` (e.g., `MyClass`)
-These rules can be turned off via configuration if needed.
-
----
-
-## 🤖 AI Refactoring Integration (`src/ai_handler.py`)
-This is an feature that can send problematic code to an LLM and ask for refactoring suggestions. When the analyzer finds something like a function with complexity > 10, it packages up the code and sends it to an API (OpenAI, Anthropic, etc.) with a structured prompt:
+Here is a high-level overview of how the analyser processes your Python code:
 
 ```text
-[SYSTEM]: You are an automated refactoring agent.
-[CONTEXT]: Cyclomatic Complexity is 14 (max allowed is 10).
-[INPUT CODE]: def process_data(data): ...
-[TASK]: Refactor to reduce complexity. Return ONLY valid Python code.
-The response is then parsed and validated using ast.parse() to make sure it's syntactically correct before being shown to the developer.
+┌─────────────────────────────────────────────────────────┐
+│                   User Input (CLI)                      │
+└───────────────────────┬─────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│                 analyzer.py (Main)                      │
+│  - Load Configuration                                   │
+│  - Parse Arguments                                      │
+│  - Manage File Discovery                                │
+└───────────────────────┬─────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│                  core.py (Engine)                       │
+│ ┌─────────────────────────────────────────────────────┐ │
+│ │            CustomVisitor (AST Walker)               │ │
+│ │ ┌──────────────┐  ┌──────────────┐  ┌────────────┐  │ │
+│ │ │  Complexity  │  │   Security   │  │ Performance│  │ │
+│ │ │   Analyzer   │  │   Analyzer   │  │  Analyzer  │  │ │
+│ │ └──────────────┘  └──────────────┘  └────────────┘  │ │
+│ └─────────────────────────────────────────────────────┘ │
+└───────────────────────┬─────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────┐
+│                 reporter.py (Output)                    │
+│ ┌─────────────┐   ┌─────────────┐   ┌─────────────┐   │
+│ │    Text     │   │    JSON     │   │    SARIF    │   │
+│ └─────────────┘   └─────────────┘   └─────────────┘   │
+└─────────────────────────────────────────────────────────┘ 
+```
 
-📊 Usage Examples & CLI Arguments
-1. Running the Analyzer
-Bash
-# Default run (analyzes sample files)
-python src/analyzer.py
+## ⬇ Installation
 
-# Analyze a specific directory or file
-python src/analyzer.py --path ./my_project --verbose
+Currently, the tool runs directly from the source code. You don't need complicated setups. Just clone the repository and install the required formatting library.
 
-# Save output as JSON
-python src/analyzer.py --path ./src/core.py --output report.json
-2. Sample Input (sample_dirty_code.py)
-Python
-def badFunction(x):
-    used_var = 10
-    unused_var = 50
-    if x > used_var:
-        return True
-    else:
-        return False
-    print("This line is completely dead!") 
-3. Output Examples
-Console Output (Colorized)
-Plaintext
-[ERROR] sample_dirty_code.py:1:0 — Function name 'badFunction' should be snake_case.
-[WARNING] sample_dirty_code.py:8:4 — Unreachable code after return/raise.
-[WARNING] sample_dirty_code.py:?:? — Variable 'unused_var' defined but never used.
-JSON Output
-JSON
-[
-  {
-    "file_path": "sample_dirty_code.py",
-    "line": 1,
-    "column": 0,
-    "message": "Function name 'badFunction' should be snake_case.",
-    "severity": "ERROR"
-  },
-  {
-    "file_path": "sample_dirty_code.py",
-    "line": 8,
-    "column": 4,
-    "message": "Unreachable code detected after return/raise.",
-    "severity": "WARNING"
-  }
-]
-4. Custom Configuration
-You can adjust settings programmatically:
+**Requirements:** Python 3.10 or higher.
 
-Python
-from core import CustomVisitor
-
-config = { 
-    "max_complexity": 12, 
-    "disable_rules": ["naming-convention"] # turn off naming checks 
-}
-
-visitor = CustomVisitor(config=config)
-🏗️ Project Structure
-Plaintext
-Static Analyser/
-├── .github/workflows/
-│   └── ci.yml             # GitHub Actions CI config
-├── src/
-│   ├── core.py            # AST visitors & metrics computation
-│   ├── analyzer.py        # CLI orchestrator & file traversal
-│   ├── ai_handler.py      # LLM integration & patch validation
-│   └── reporter.py        # Console and JSON output formatting
-├── tests/
-│   └── test_analyzer.py   # Automated regression unit tests
-└── requirements.txt       # Framework dependencies
-⚠️ Known Limitations
-Cross-module analysis: The variable tracker only looks at single files. It doesn't analyze imports or global dependencies across modules.
-
-Nested functions: Variables defined inside closures might show up as "unused" incorrectly in some dynamic edge cases.
-
-Python version: Optimized for Python 3.10+. Older syntax (Python 2) won't parse.
-
-🧪 Testing & CI
-The project uses pytest for regression testing. The test suite isolates specific code snippets and checks that the analyzer catches the right issues.
-
-GitHub Actions runs the full test suite on every push to main branch:
-
-Bash
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-pytest -v
-📦 Installation & Setup
-Requirements
-Python 3.10 or higher (Fully verified on Python 3.13)
-
-Dependencies listed in requirements.txt
-
-Execution
-Bash
+```bash
+# 1. Clone the repository
 git clone [https://github.com/yeganejhi/Static-Analyser.git](https://github.com/yeganejhi/Static-Analyser.git)
-cd Static-Analyser
-pip install -r requirements.txt
-pytest -v # verify everything works
-📚 References
-This work draws on foundational concepts from program analysis and software metrics:
+cd "Static Analyser"
 
-McCabe, T. J. (1976). A Complexity Measure. IEEE Transactions on Software Engineering. (The classic paper on cyclomatic complexity.)
+# 2. Install required packages (for colored terminal output and testing)
+pip install colorama pytest
+```
 
-Nielson, F., Nielson, H. R., & Hankin, C. (2015). Principles of Program Analysis. Springer. (A comprehensive reference on static analysis and data-flow.)
+##  Usage
+
+Using the analyser is very simple. You can analyze a single Python file or an entire directory.
+
+**Analyze a specific folder:**
+```bash
+python run.py path/to/your/project
+```
+
+**Analyze a single file:**
+```bash
+python run.py sample_code.py
+```
+
+**Export the report to JSON format:**
+```bash
+python run.py path/to/your/project --format json --output report.json
+```
+
+###  Configuration (Optional)
+You can customize how the analyser works by creating an `analyzer.json` file in your root directory. For example:
+
+```json
+{
+  "max_complexity": 10,
+  "disable_rules": ["naming-convention"],
+  "enable_security": true,
+  "enable_performance": true,
+  "exclude_patterns": [".venv", "__pycache__", "test_*.py"]
+}
+```
+
+##  Screenshots
+
+Here are visual examples of the tool in action:
+
+### Terminal Output Example
+![Static Analysis Report](screenshots/report.png)
+
+### JSON Output Example
+![JSON Report](screenshots/json-report.png)
+
+##  What it catches (Examples)
+
+Here are a few examples of what our tool can automatically detect:
+
+*   **Security:** Use of `eval()` is dangerous and can lead to code injection
+*   **Code Quality:** Variable `temp_data` is defined but never used.
+*   **Performance:** Potential infinite loop detected: `while True` without break or return
+*   **Style:** Function name `calculateScore` should be `snake_case`.
+
+##  Feedback & Contributing
+
+Open Source software grows through community! 
+
+*   If you find a bug or have an idea to make this tool better, please open an **Issue**.
+*   If you want to contribute code, feel free to fork the repository and submit a **Pull Request**. 
+*   Check our tests in the `tests/` directory to see how we maintain quality.
+
+
+
+```
