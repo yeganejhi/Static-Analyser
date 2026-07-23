@@ -1,4 +1,3 @@
-# tests/test_analyzer.py
 import os
 import sys
 import unittest
@@ -126,6 +125,37 @@ def process(value):
         self.assertEqual(len(messages), 2)
         self.assertTrue(any("badFunction" in msg for msg in messages))
         self.assertTrue(any("student_info" in msg for msg in messages))
+
+    def test_core_all_rules(self):
+        bad_python_code = """
+import os, sys, math
+
+THIS_IS_A_VERY_LONG_VARIABLE_NAME_THAT_SHOULD_TRIGGER_A_WARNING = 10
+
+def very_complex_function(a, b, c, d, e, f, g, h):
+    eval("print('danger')")
+    exec("x = 1")
+    
+    if a > b:
+        for i in range(10):
+            if i == 5:
+                while True:
+                    try:
+                        pass
+                    except Exception:
+                        pass
+    
+    x = 1
+    return True
+"""
+        tree = generate_ast(bad_python_code)
+        self.assertIsNotNone(tree)
+        
+        visitor = CustomVisitor(file_path="bad_code.py", config={"max_complexity": 3})
+        visitor.visit(tree)
+        
+        issues = visitor.finalize_analysis()
+        self.assertTrue(len(issues) > 0)
 
 if __name__ == "__main__":
     unittest.main()
