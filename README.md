@@ -1,14 +1,15 @@
 # Python Static Analyser
 
-[![CI Status](https://github.com/yeganejhi/Static-Analyser/actions/workflows/ci.yml/badge.svg)](https://github.com/yeganejhi/Static-Analyser/actions)
+[![Coverage Status](https://img.shields.io/badge/Coverage-86%25-brightgreen.svg)](https://github.com/yeganejhi/Static-Analyser)
 
 ## Highlights
 
-*  **Improve Code Quality:** Automatically find unused variables, dead code, and naming convention mistakes.
-*  **Enhance Security:** Detect dangerous functions like `eval()` and potential SQL injections before they cause harm.
-*  **Boost Performance:** Identify infinite loops and inefficient string concatenations.
-*  **Flexible Reporting:** Export your results in plain text, JSON, or SARIF formats.
-*  **Fully Customizable:** Easily adjust rules and complexity limits using a simple JSON file.
+*   **Improve Code Quality:** Automatically find unused variables, dead code, and naming convention mistakes.
+*   **Enhance Security:** Detect dangerous functions like `eval()` and potential SQL injections before they cause harm.
+*   **Boost Performance:** Identify infinite loops and inefficient string concatenations.
+*   **Flexible Reporting:** Export your results in plain text, JSON, or SARIF formats.
+*   **Fully Customizable:** Easily adjust rules and complexity limits using a simple JSON file.
+*   **Reliable Engine:** Backed by an automated testing suite using Pytest with over 85% code coverage.
 
 ## Overview
 
@@ -62,11 +63,11 @@ Currently, the tool runs directly from the source code. You don't need complicat
 
 ```bash
 # 1. Clone the repository
-git clone [https://github.com/yeganejhi/Static-Analyser.git](https://github.com/yeganejhi/Static-Analyser.git)
+git clone https://github.com/yeganejhi/Static-Analyser.git
 cd "Static Analyser"
 
 # 2. Install required packages (for colored terminal output and testing)
-pip install colorama pytest
+pip install colorama pytest pytest-cov
 ```
 
 ## Usage
@@ -86,6 +87,11 @@ python run.py sample_code.py
 **Export the report to JSON format:**
 ```bash
 python run.py path/to/your/project --format json --output report.json
+```
+###  Running Tests
+To run the automated test suite and check code coverage:
+```bash
+pytest tests/ --cov=src --cov-report=term
 ```
 
 ### Configuration (Optional)
