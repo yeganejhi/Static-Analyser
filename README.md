@@ -9,13 +9,13 @@
 *   **Boost Performance:** Identify infinite loops and inefficient string concatenations.
 *   **Flexible Reporting:** Export your results in plain text, JSON, or SARIF formats.
 *   **Fully Customizable:** Easily adjust rules and complexity limits using a simple JSON file.
-*   **Reliable Engine:** Backed by an automated testing suite using Pytest with over 85% code coverage.
+*   **Reliable Engine:** Backed by an automated testing suite using Pytest with over 86% code coverage.
 
 ## Overview
 
-**Python Static Analyser** is a professional and lightweight code quality tool designed for Python developers. Writing clean, secure, and fast code can be challenging, especially in large projects. This tool helps you automatically scan your Python codebase to find hidden bugs, bad practices, and security risks.
+**Python Static Analyser** is a lightweight AST-based static analysis tool for Python developers. Writing clean, secure, and fast code can be challenging, especially in large projects. This tool helps you automatically scan your Python codebase to find potential bugs, bad practices, and security risks.
 
-Whether you are a solo developer trying to learn better coding habits, or a team looking to maintain high standards, this tool provides clear and helpful feedback directly in your terminal. It acts like an automated code reviewer that never gets tired!
+Whether you are a solo developer trying to learn better coding habits, or a team looking to maintain high standards, this tool provides clear and helpful feedback directly in your terminal.
 
 ## Architecture
 
